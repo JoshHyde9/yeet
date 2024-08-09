@@ -1,27 +1,18 @@
 use axum::{
     http::{HeaderValue, Method},
-    routing::get,
-    Json, Router,
+    Extension, Router,
 };
-use serde::Serialize;
+use std::{env, sync::Arc};
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
+use prisma::PrismaClient;
+
 use dotenv::dotenv;
-use std::env;
 
-#[derive(Serialize)]
-struct Response {
-    message: String,
-}
-
-async fn hello_world() -> Json<Response> {
-    let response = Response {
-        message: "Hello World!".to_owned(),
-    };
-
-    Json(response)
-}
+#[allow(warnings, unused)]
+mod prisma;
+mod routes;
 
 #[tokio::main]
 async fn main() {
@@ -38,11 +29,18 @@ async fn main() {
                 .unwrap(),
         );
 
-    let app = Router::new().route("/", get(hello_world).layer(cors));
+    let client = Arc::new(PrismaClient::_builder().build().await.unwrap());
+
+    let app = Router::new()
+        .nest("/api", routes::create_route())
+        .layer(Extension(client))
+        .layer(cors);
 
     let listener = TcpListener::bind(format!("{host}:{port}")).await.unwrap();
 
     println!("Server listening at http://{host}:{port}");
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.into_make_service())
+        .await
+        .unwrap();
 }
