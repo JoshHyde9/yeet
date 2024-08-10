@@ -1,32 +1,19 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-
-  type Users = {
-    id: string;
-    name: string;
-  }[];
-
-  let users: Users;
-
-  onMount(async () => {
-    const response = await fetch("http://localhost:5000/api");
-
-    const data: Users = await response.json();
-
-    if (!data) {
-      console.error("No data found");
-    }
-
-    users = data;
-  });
+  export let data;
 </script>
 
 <h1 class="text-6xl">Welcome to SvelteKit</h1>
 <p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
 
-{#if users}
-  {#each users as user}
-    <p>{user.name}</p>
+{#if data.users}
+  {#each data.users as user}
+    <div class="pb-4">
+      <p>{user.id}</p>
+      <p>{user.first_name}</p>
+      <p>{user.last_name}</p>
+      <p>{user.email}</p>
+      <p>{user.password}</p>
+    </div>
   {/each}
 {:else}
   <p>loading...</p>
