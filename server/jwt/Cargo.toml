@@ -1,0 +1,9 @@
+[package]
+name = "jwt"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.38"
+jsonwebtoken = "9.3.0"
+serde = "1.0.207"

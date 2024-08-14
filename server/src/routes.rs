@@ -12,7 +12,8 @@ use argon2::{password_hash::SaltString, PasswordHasher};
 
 use serde::{Deserialize, Serialize};
 
-use crate::prisma::PrismaClient;
+use crate::prisma::{self, PrismaClient};
+use jwt::{self};
 
 pub type Database = Extension<Arc<PrismaClient>>;
 
@@ -47,10 +48,14 @@ async fn register(db: Database, Json(body): Json<CreateUser>) -> Response<Body> 
             hashed_password.to_string(),
             vec![],
         )
+        .select(prisma::user::select!({ id }))
         .exec()
-        .await;
+        .await
+        .unwrap();
 
-    Json(user.ok()).into_response()
+    let token = jwt::get_jwt(user.id).unwrap();
+
+    Json(token).into_response()
 }
 
 pub fn create_route() -> Router {
